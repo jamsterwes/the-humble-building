@@ -4,25 +4,13 @@ use winit::{
     application::ApplicationHandler,
     event::*,
     event_loop::{ActiveEventLoop, EventLoop},
-    keyboard::{KeyCode, PhysicalKey},
+    keyboard::PhysicalKey,
     window::Window,
 };
 
-pub struct State {
-    window: Arc<Window>,
-}
+mod renderer;
 
-impl State {
-    pub async fn new(window: Arc<Window>) -> anyhow::Result<Self> {
-        Ok(Self { window })
-    }
-
-    pub fn resize(&mut self, _width: u32, _height: u32) {}
-
-    pub fn render(&mut self) {
-        self.window.request_redraw();
-    }
-}
+use renderer::State;
 
 pub struct App {
     state: Option<State>,
@@ -63,7 +51,14 @@ impl ApplicationHandler<State> for App {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::Resized(size) => state.resize(size.width, size.height),
             WindowEvent::RedrawRequested => {
-                state.render();
+                state.update();
+                match state.render() {
+                    Ok(_) => {}
+                    Err(e) => {
+                        log::error!("{e}");
+                        event_loop.exit();
+                    }
+                }
             }
             WindowEvent::KeyboardInput {
                 event:
@@ -73,10 +68,7 @@ impl ApplicationHandler<State> for App {
                         ..
                     },
                 ..
-            } => match (code, key_state.is_pressed()) {
-                (KeyCode::Escape, true) => event_loop.exit(),
-                _ => {}
-            },
+            } => state.handle_key(event_loop, code, key_state.is_pressed()),
             _ => {}
         }
     }
