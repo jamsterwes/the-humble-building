@@ -152,6 +152,22 @@ impl State {
         }
     }
 
+    fn color_attach_with_clear<'a>(
+        &self,
+        view: &'a wgpu::TextureView,
+        color: wgpu::Color,
+    ) -> wgpu::RenderPassColorAttachment<'a> {
+        wgpu::RenderPassColorAttachment {
+            view: &view,
+            resolve_target: None,
+            depth_slice: None,
+            ops: wgpu::Operations {
+                load: wgpu::LoadOp::Clear(color),
+                store: wgpu::StoreOp::Store,
+            },
+        }
+    }
+
     pub fn render(&mut self) -> anyhow::Result<()> {
         self.window.request_redraw();
 
@@ -189,20 +205,15 @@ impl State {
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    depth_slice: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
-                        store: wgpu::StoreOp::Store,
+                color_attachments: &[Some(self.color_attach_with_clear(
+                    &view,
+                    wgpu::Color {
+                        r: 0.0,
+                        g: 1.0,
+                        b: 0.0,
+                        a: 1.0,
                     },
-                })],
+                ))],
                 depth_stencil_attachment: None,
                 occlusion_query_set: None,
                 timestamp_writes: None,
