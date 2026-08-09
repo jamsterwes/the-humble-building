@@ -3,7 +3,10 @@ use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use winit::{event_loop::ActiveEventLoop, keyboard::KeyCode, window::Window};
 
-use crate::geometry::{INDICES, VERTICES, Vertex};
+use crate::{
+    camera::Camera,
+    geometry::{INDICES, VERTICES, Vertex},
+};
 
 pub struct State {
     surface: wgpu::Surface<'static>,
@@ -16,6 +19,7 @@ pub struct State {
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     num_indices: u32,
+    camera: Camera,
 }
 
 impl State {
@@ -137,6 +141,16 @@ impl State {
 
         let num_indices = INDICES.len() as u32;
 
+        let camera = Camera {
+            eye: (0.0, 1.0, 2.0).into(),
+            target: (0.0, 0.0, 0.0).into(),
+            up: cgmath::Vector3::unit_y(),
+            aspect: config.width as f32 / config.height as f32,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+        };
+
         Ok(Self {
             surface,
             device,
@@ -148,6 +162,7 @@ impl State {
             vertex_buffer,
             index_buffer,
             num_indices,
+            camera,
         })
     }
 

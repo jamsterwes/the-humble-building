@@ -8,6 +8,7 @@ use winit::{
     window::Window,
 };
 
+mod camera;
 mod geometry;
 mod renderer;
 
