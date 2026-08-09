@@ -8,6 +8,7 @@ use winit::{
     window::Window,
 };
 
+mod geometry;
 mod renderer;
 
 use renderer::State;
