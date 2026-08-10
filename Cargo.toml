@@ -15,3 +15,6 @@ cgmath = "0.18"
 dear-imgui-rs = "0.16.0-alpha.2"
 dear-imgui-wgpu = "0.16.0-alpha.2"
 dear-imgui-winit = "0.16.0-alpha.2"
+
+[patch.crates-io]
+dear-imgui-rs = { git = "https://github.com/jamsterwes/dear-imgui-rs.git", branch = "fix/use-getcurrentwindowread-scope-snapshot" }

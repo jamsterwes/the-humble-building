@@ -8,6 +8,7 @@ use winit::{event::WindowEvent, event_loop::ActiveEventLoop, keyboard::KeyCode, 
 use crate::{
     camera::{Camera, CameraUniform},
     geometry::{INDICES, VERTICES, Vertex},
+    ui::{UiState, render_ui},
 };
 
 pub struct State {
@@ -28,7 +29,7 @@ pub struct State {
     imgui: dear_imgui_rs::Context,
     platform: WinitPlatform,
     imgui_renderer: WgpuRenderer,
-    demo_open: bool,
+    ui_state: UiState,
 }
 
 impl State {
@@ -201,6 +202,8 @@ impl State {
         let mut imgui_renderer = WgpuRenderer::new(init_info, &mut imgui)?;
         imgui_renderer.set_gamma_mode(GammaMode::Auto);
 
+        let ui_state = UiState::new();
+
         Ok(Self {
             surface,
             device,
@@ -218,8 +221,8 @@ impl State {
             imgui,
             platform,
             imgui_renderer,
-            demo_open: true,
             camera_bind_group,
+            ui_state,
         })
     }
 
@@ -287,7 +290,7 @@ impl State {
 
         self.platform.prepare_frame(&mut self.imgui, &self.window)?;
         let ui = self.imgui.frame();
-        ui.show_demo_window(&mut self.demo_open);
+        render_ui(&mut self.ui_state, &ui);
         self.platform.prepare_render(ui, &self.window)?;
         let imgui_frame = self.imgui.render(self.imgui_renderer.renderer_consumer()?);
 

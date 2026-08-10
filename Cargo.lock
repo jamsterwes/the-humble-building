@@ -362,8 +362,7 @@ checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 [[package]]
 name = "dear-imgui-build-support"
 version = "0.16.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "064ce176c758af87ca0d9163bf1a45c077c6cb565a92486328ca1eb7bd268f90"
+source = "git+https://github.com/jamsterwes/dear-imgui-rs.git?branch=fix%2Fuse-getcurrentwindowread-scope-snapshot#4881706968b98909caa0dd22b5a1effe6d0bbf19"
 dependencies = [
  "cc",
  "serde",
@@ -373,8 +372,7 @@ dependencies = [
 [[package]]
 name = "dear-imgui-rs"
 version = "0.16.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc0498ee1691c50c8de1019567a7f8a05ce5a8d10699472450e2f33cd23b2ece"
+source = "git+https://github.com/jamsterwes/dear-imgui-rs.git?branch=fix%2Fuse-getcurrentwindowread-scope-snapshot#4881706968b98909caa0dd22b5a1effe6d0bbf19"
 dependencies = [
  "bitflags 2.13.1",
  "dear-imgui-sys",
@@ -385,8 +383,7 @@ dependencies = [
 [[package]]
 name = "dear-imgui-sys"
 version = "0.16.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a1f04f3dd89b444633109b2ba7276aa9d28a6ddf3fda50cd496936beb45a111"
+source = "git+https://github.com/jamsterwes/dear-imgui-rs.git?branch=fix%2Fuse-getcurrentwindowread-scope-snapshot#4881706968b98909caa0dd22b5a1effe6d0bbf19"
 dependencies = [
  "cc",
  "dear-imgui-build-support",
