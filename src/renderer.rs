@@ -294,6 +294,17 @@ impl State {
         self.platform.prepare_render(ui, &self.window)?;
         let imgui_frame = self.imgui.render(self.imgui_renderer.renderer_consumer()?);
 
+        // IDK if this is best spot to put UI-state-consumption. another day...
+        self.camera_uniform
+            .update_model(self.ui_state.get_model_matrix());
+        if self.ui_state.model_updated {
+            self.queue.write_buffer(
+                &self.camera_buffer,
+                0,
+                bytemuck::cast_slice(&[self.camera_uniform]),
+            );
+        }
+
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {

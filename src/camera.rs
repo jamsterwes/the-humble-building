@@ -28,6 +28,7 @@ impl Camera {
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct CameraUniform {
     pub view_proj: [[f32; 4]; 4],
+    pub model: [[f32; 4]; 4],
 }
 
 impl CameraUniform {
@@ -35,7 +36,12 @@ impl CameraUniform {
         use cgmath::SquareMatrix;
         Self {
             view_proj: cgmath::Matrix4::identity().into(),
+            model: cgmath::Matrix4::identity().into(),
         }
+    }
+
+    pub fn update_model(&mut self, matrix: cgmath::Matrix4<f32>) {
+        self.model = matrix.into();
     }
 
     pub fn update_view_proj(&mut self, camera: &Camera) {
