@@ -49,6 +49,8 @@ impl ApplicationHandler<State> for App {
             None => return,
         };
 
+        let _consumed = state.handle_window_event(&event);
+
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::Resized(size) => state.resize(size.width, size.height),
@@ -70,7 +72,9 @@ impl ApplicationHandler<State> for App {
                         ..
                     },
                 ..
-            } => state.handle_key(event_loop, code, key_state.is_pressed()),
+            } if !state.wants_keyboard() => {
+                state.handle_key(event_loop, code, key_state.is_pressed())
+            }
             _ => {}
         }
     }

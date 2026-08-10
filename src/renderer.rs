@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
+use dear_imgui_wgpu::{FramebufferExtent, GammaMode, WgpuInitInfo, WgpuRenderer};
+use dear_imgui_winit::{HiDpiMode, WinitPlatform};
 use wgpu::util::DeviceExt;
-use winit::{event_loop::ActiveEventLoop, keyboard::KeyCode, window::Window};
+use winit::{event::WindowEvent, event_loop::ActiveEventLoop, keyboard::KeyCode, window::Window};
 
 use crate::{
     camera::{Camera, CameraUniform},
@@ -23,6 +25,10 @@ pub struct State {
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
+    imgui: dear_imgui_rs::Context,
+    platform: WinitPlatform,
+    imgui_renderer: WgpuRenderer,
+    demo_open: bool,
 }
 
 impl State {
@@ -187,6 +193,14 @@ impl State {
 
         let num_indices = INDICES.len() as u32;
 
+        let mut imgui = dear_imgui_rs::Context::create();
+        let mut platform = WinitPlatform::new(&mut imgui)?;
+        platform.attach_window(window.clone(), HiDpiMode::Default, &mut imgui)?;
+
+        let init_info = WgpuInitInfo::new(device.clone(), queue.clone(), config.format);
+        let mut imgui_renderer = WgpuRenderer::new(init_info, &mut imgui)?;
+        imgui_renderer.set_gamma_mode(GammaMode::Auto);
+
         Ok(Self {
             surface,
             device,
@@ -201,8 +215,22 @@ impl State {
             camera,
             camera_uniform,
             camera_buffer,
+            imgui,
+            platform,
+            imgui_renderer,
+            demo_open: true,
             camera_bind_group,
         })
+    }
+
+    pub fn handle_window_event(&mut self, event: &WindowEvent) -> bool {
+        self.platform
+            .handle_window_event(&mut self.imgui, &self.window, event)
+            .unwrap_or(false)
+    }
+
+    pub fn wants_keyboard(&self) -> bool {
+        self.imgui.io().want_capture_keyboard()
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
@@ -215,7 +243,6 @@ impl State {
     }
 
     fn color_attach_with_clear<'a>(
-        &self,
         view: &'a wgpu::TextureView,
         color: wgpu::Color,
     ) -> wgpu::RenderPassColorAttachment<'a> {
@@ -258,6 +285,12 @@ impl State {
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
 
+        self.platform.prepare_frame(&mut self.imgui, &self.window)?;
+        let ui = self.imgui.frame();
+        ui.show_demo_window(&mut self.demo_open);
+        self.platform.prepare_render(ui, &self.window)?;
+        let imgui_frame = self.imgui.render(self.imgui_renderer.renderer_consumer()?);
+
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -267,7 +300,7 @@ impl State {
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
-                color_attachments: &[Some(self.color_attach_with_clear(
+                color_attachments: &[Some(Self::color_attach_with_clear(
                     &view,
                     wgpu::Color {
                         r: 0.0,
@@ -287,6 +320,10 @@ impl State {
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
             render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
             render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+
+            let extent = FramebufferExtent::from_texture(&output.texture);
+            self.imgui_renderer
+                .render(imgui_frame, &mut render_pass, extent)?;
         }
 
         self.queue.submit(std::iter::once(encoder.finish()));

@@ -12,3 +12,6 @@ wgpu = "30.0"
 pollster = "0.3"
 bytemuck = { version = "1.24", features = ["derive"] }
 cgmath = "0.18"
+dear-imgui-rs = "0.16.0-alpha.2"
+dear-imgui-wgpu = "0.16.0-alpha.2"
+dear-imgui-winit = "0.16.0-alpha.2"
