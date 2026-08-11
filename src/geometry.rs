@@ -2,7 +2,7 @@
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     position: [f32; 3],
-    color: [f32; 3],
+    texcoord: [f32; 2],
 }
 
 impl Vertex {
@@ -19,7 +19,7 @@ impl Vertex {
                 wgpu::VertexAttribute {
                     offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
                     shader_location: 1,
-                    format: wgpu::VertexFormat::Float32x3,
+                    format: wgpu::VertexFormat::Float32x2,
                 },
             ],
         }
@@ -29,44 +29,108 @@ impl Vertex {
 pub const VERTICES: &[Vertex] = &[
     Vertex {
         position: [-0.5, -0.5, -0.5],
-        color: [0.0, 0.0, 0.0],
-    },
-    Vertex {
-        position: [0.5, -0.5, -0.5],
-        color: [1.0, 0.0, 0.0],
-    },
-    Vertex {
-        position: [0.5, 0.5, -0.5],
-        color: [1.0, 1.0, 0.0],
+        texcoord: [0.0, 0.0],
     },
     Vertex {
         position: [-0.5, 0.5, -0.5],
-        color: [0.0, 1.0, 0.0],
+        texcoord: [1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5, -0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, -0.5],
+        texcoord: [0.0, 1.0],
     },
     Vertex {
         position: [-0.5, -0.5, 0.5],
-        color: [0.0, 0.0, 1.0],
+        texcoord: [0.0, 0.0],
     },
     Vertex {
         position: [0.5, -0.5, 0.5],
-        color: [1.0, 0.0, 1.0],
+        texcoord: [1.0, 0.0],
     },
     Vertex {
         position: [0.5, 0.5, 0.5],
-        color: [1.0, 1.0, 1.0],
+        texcoord: [1.0, 1.0],
     },
     Vertex {
         position: [-0.5, 0.5, 0.5],
-        color: [0.0, 1.0, 1.0],
+        texcoord: [0.0, 1.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, -0.5],
+        texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5, -0.5],
+        texcoord: [1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5, 0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, 0.5],
+        texcoord: [0.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5, -0.5],
+        texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5, 0.5],
+        texcoord: [1.0, 0.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5, 0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5, -0.5],
+        texcoord: [0.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5, -0.5],
+        texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5, 0.5],
+        texcoord: [1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5, 0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [0.5, 0.5, -0.5],
+        texcoord: [0.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5, -0.5],
+        texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, -0.5],
+        texcoord: [1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, 0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5, 0.5],
+        texcoord: [0.0, 1.0],
     },
 ];
 
 #[rustfmt::skip]
 pub const INDICES: &[u16] = &[
-    0, 3, 2, 0, 2, 1,
+    0, 1, 2, 0, 2, 3,
     4, 5, 6, 4, 6, 7,
-    1, 2, 6, 1, 6, 5,
-    0, 4, 7, 0, 7, 3,
-    3, 7, 6, 3, 6, 2,
-    0, 1, 5, 0, 5, 4,
+    8, 9, 10, 8, 10, 11,
+    12, 13, 14, 12, 14, 15,
+    16, 17, 18, 16, 18, 19,
+    20, 21, 22, 20, 22, 23,
 ];

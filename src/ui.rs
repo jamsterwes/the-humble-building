@@ -33,7 +33,7 @@ impl UiState {
 }
 
 pub fn render_ui(_state: &mut UiState, ui: &dear_imgui_rs::Ui) {
-    ui.window("Wesley").build(|| {
+    ui.window("Model Matrix").build(|| {
         ui.text("Scale:");
         _state.model_updated = {
             ui.slider_f32("X##scale", &mut _state.xscale, 0.1, 10.0)
