@@ -93,7 +93,7 @@ impl State {
         });
 
         let camera = Camera {
-            eye: (0.0, 1.0, 2.0).into(),
+            eye: (0.0, 1.0, 4.0).into(),
             target: (0.0, 0.0, 0.0).into(),
             up: cgmath::Vector3::unit_y(),
             aspect: config.width as f32 / config.height as f32,
@@ -317,9 +317,9 @@ impl State {
                 color_attachments: &[Some(Self::color_attach_with_clear(
                     &view,
                     wgpu::Color {
-                        r: 0.0,
-                        g: 0.0,
-                        b: 0.0,
+                        r: 0.529,
+                        g: 0.808,
+                        b: 0.922,
                         a: 1.0,
                     },
                 ))],

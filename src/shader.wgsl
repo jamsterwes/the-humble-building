@@ -16,8 +16,8 @@ struct VertexOutput {
     @location(0) texcoord: vec2<f32>,
 };
 
-const WINDOW_X: f32 = 2.0;
-const WINDOW_Y: f32 = 2.0;
+const WINDOW_X: f32 = 1.0;
+const WINDOW_Y: f32 = 1.0;
 
 @vertex
 fn vs_main(
@@ -32,5 +32,5 @@ fn vs_main(
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let tiled = fract(in.texcoord);
-    return vec4<f32>(tiled, 1.0, 1.0);
+    return vec4<f32>(tiled, 0.0, 1.0);
 }

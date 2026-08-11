@@ -49,8 +49,8 @@ pub fn render_ui(_state: &mut UiState, ui: &dear_imgui_rs::Ui) {
             ui,
             "scale",
             &mut _state.scale,
-            (0.1, 0.1, 0.1),
-            (10.0, 10.0, 10.0),
+            (0.25, 0.25, 0.25),
+            (2.5, 2.5, 2.5),
         );
         ui.text("Rotation (deg):");
         _state.model_updated |= slider_vec3_f32(
