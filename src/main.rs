@@ -68,7 +68,7 @@ impl ApplicationHandler<State> for App {
             WindowEvent::Resized(size) => state.resize(size.width, size.height),
             WindowEvent::RedrawRequested => {
                 state.update(&mut self.game);
-                match state.render() {
+                match state.render(&self.game) {
                     Ok(_) => {}
                     Err(e) => {
                         log::error!("{e}");

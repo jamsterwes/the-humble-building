@@ -1,5 +1,8 @@
 use crate::{
-    components::base::{CameraComponent, TransformComponent},
+    components::{
+        base::{CameraComponent, TransformComponent},
+        cube::CubeComponent,
+    },
     ecs::{EntityId, Game, System},
 };
 
@@ -33,12 +36,23 @@ fn register_camera(game: &mut Game) {
     game.add_component(camera_entity, CameraComponent {});
 }
 
-// TODO
-fn register_cube(_game: &mut Game) {}
+fn register_cube(game: &mut Game) {
+    let cube_entity = game.new_entity();
+    game.add_component(
+        cube_entity,
+        TransformComponent {
+            pos: (0.0, 0.0, 0.0),
+            rot: (0.0, 0.0, 0.0),
+            scale: (1.0, 1.0, 1.0),
+        },
+    );
+    game.add_component(cube_entity, CubeComponent {});
+}
 
 pub fn game_main(game: &mut Game) {
     register_systems(game);
     register_camera(game);
+    register_cube(game);
 
     let my_entity = game.new_entity();
     game.add_component(my_entity, MessageComponent { msg: "Hello!" });

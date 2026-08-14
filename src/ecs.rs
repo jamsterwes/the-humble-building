@@ -101,6 +101,14 @@ impl Game {
             .copied()
     }
 
+    pub fn get_components<T: Any>(&self) -> impl Iterator<Item = (EntityId, &T)> {
+        let component_type = TypeId::of::<T>();
+        self._entity_components
+            .get(&component_type)
+            .into_iter()
+            .flat_map(|m| m.iter().map(|(&eid, c)| (eid, c.downcast_ref::<T>().unwrap())))
+    }
+
     pub fn get_components_mut<T: Any>(&mut self) -> impl Iterator<Item = (EntityId, &mut T)> {
         let component_type = TypeId::of::<T>();
         self._entity_components

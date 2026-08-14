@@ -7,7 +7,10 @@ use winit::{event::WindowEvent, event_loop::ActiveEventLoop, keyboard::KeyCode, 
 
 use crate::{
     camera::{Camera, CameraUniform},
-    components::base::{CameraComponent, TransformComponent},
+    components::{
+        base::{CameraComponent, TransformComponent},
+        cube::CubeComponent,
+    },
     ecs::Game,
     geometry::{INDICES, VERTICES, Vertex},
     ui::{UiState, render_ui},
@@ -265,7 +268,7 @@ impl State {
         }
     }
 
-    pub fn render(&mut self) -> anyhow::Result<()> {
+    pub fn render(&mut self, game: &Game) -> anyhow::Result<()> {
         self.window.request_redraw();
 
         if !self.is_surface_configured {
@@ -299,15 +302,6 @@ impl State {
         self.platform.prepare_render(ui, &self.window)?;
         let imgui_frame = self.imgui.render(self.imgui_renderer.renderer_consumer()?);
 
-        // IDK if this is best spot to put UI-state-consumption. another day...
-        self.camera_uniform
-            .update_model(self.ui_state.get_model_matrix());
-        self.queue.write_buffer(
-            &self.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[self.camera_uniform]),
-        );
-
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -336,7 +330,18 @@ impl State {
             render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
             render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-            render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+
+            for (eid, _cube) in game.get_components::<CubeComponent>() {
+                if let Some(transform) = game.get_component::<TransformComponent>(eid) {
+                    self.camera_uniform.update_model(transform.get_model_matrix());
+                    self.queue.write_buffer(
+                        &self.camera_buffer,
+                        0,
+                        bytemuck::cast_slice(&[self.camera_uniform]),
+                    );
+                    render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+                }
+            }
 
             let extent = FramebufferExtent::from_texture(&output.texture);
             self.imgui_renderer
