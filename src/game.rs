@@ -36,12 +36,12 @@ fn register_camera(game: &mut Game) {
     game.add_component(camera_entity, CameraComponent {});
 }
 
-fn register_cube(game: &mut Game) {
+fn register_cube(game: &mut Game, pos: (f32, f32, f32)) {
     let cube_entity = game.new_entity();
     game.add_component(
         cube_entity,
         TransformComponent {
-            pos: (0.0, 0.0, 0.0),
+            pos,
             rot: (0.0, 0.0, 0.0),
             scale: (1.0, 1.0, 1.0),
         },
@@ -52,7 +52,11 @@ fn register_cube(game: &mut Game) {
 pub fn game_main(game: &mut Game) {
     register_systems(game);
     register_camera(game);
-    register_cube(game);
+    register_cube(game, (0.0, 0.0, 0.0));
+    register_cube(game, (2.0, 0.0, 0.0));
+    register_cube(game, (-2.0, 0.0, 0.0));
+    register_cube(game, (0.0, 0.0, 2.0));
+    register_cube(game, (0.0, 0.0, -2.0));
 
     let my_entity = game.new_entity();
     game.add_component(my_entity, MessageComponent { msg: "Hello!" });

@@ -16,6 +16,13 @@ use crate::{
     ui::{UiState, render_ui},
 };
 
+const CLEAR_COLOR: wgpu::Color = wgpu::Color {
+    r: 0.529,
+    g: 0.808,
+    b: 0.922,
+    a: 1.0,
+};
+
 pub struct State {
     surface: wgpu::Surface<'static>,
     device: wgpu::Device,
@@ -253,19 +260,52 @@ impl State {
         }
     }
 
-    fn color_attach_with_clear<'a>(
-        view: &'a wgpu::TextureView,
-        color: wgpu::Color,
-    ) -> wgpu::RenderPassColorAttachment<'a> {
+    fn color_attachment(view: &wgpu::TextureView, clear: bool) -> wgpu::RenderPassColorAttachment<'_> {
         wgpu::RenderPassColorAttachment {
-            view: &view,
+            view,
             resolve_target: None,
             depth_slice: None,
             ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(color),
+                load: if clear {
+                    wgpu::LoadOp::Clear(CLEAR_COLOR)
+                } else {
+                    wgpu::LoadOp::Load
+                },
                 store: wgpu::StoreOp::Store,
             },
         }
+    }
+
+    fn draw_cube(&mut self, view: &wgpu::TextureView, model: cgmath::Matrix4<f32>, clear: bool) {
+        self.camera_uniform.update_model(model);
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_uniform]),
+        );
+
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Cube Render Encoder"),
+            });
+        {
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("Cube Render Pass"),
+                color_attachments: &[Some(Self::color_attachment(view, clear))],
+                depth_stencil_attachment: None,
+                occlusion_query_set: None,
+                timestamp_writes: None,
+                multiview_mask: None,
+            });
+
+            render_pass.set_pipeline(&self.render_pipeline);
+            render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
+            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+            render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+        }
+        self.queue.submit(std::iter::once(encoder.finish()));
     }
 
     pub fn render(&mut self, game: &Game) -> anyhow::Result<()> {
@@ -296,6 +336,14 @@ impl State {
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
 
+        let mut cleared = false;
+        for (eid, _cube) in game.get_components::<CubeComponent>() {
+            if let Some(transform) = game.get_component::<TransformComponent>(eid) {
+                self.draw_cube(&view, transform.get_model_matrix(), !cleared);
+                cleared = true;
+            }
+        }
+
         self.platform.prepare_frame(&mut self.imgui, &self.window)?;
         let ui = self.imgui.frame();
         render_ui(&mut self.ui_state, &ui);
@@ -305,43 +353,17 @@ impl State {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Render Encoder"),
+                label: Some("UI Render Encoder"),
             });
-
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("Render Pass"),
-                color_attachments: &[Some(Self::color_attach_with_clear(
-                    &view,
-                    wgpu::Color {
-                        r: 0.529,
-                        g: 0.808,
-                        b: 0.922,
-                        a: 1.0,
-                    },
-                ))],
+                label: Some("UI Render Pass"),
+                color_attachments: &[Some(Self::color_attachment(&view, !cleared))],
                 depth_stencil_attachment: None,
                 occlusion_query_set: None,
                 timestamp_writes: None,
                 multiview_mask: None,
             });
-
-            render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
-            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-
-            for (eid, _cube) in game.get_components::<CubeComponent>() {
-                if let Some(transform) = game.get_component::<TransformComponent>(eid) {
-                    self.camera_uniform.update_model(transform.get_model_matrix());
-                    self.queue.write_buffer(
-                        &self.camera_buffer,
-                        0,
-                        bytemuck::cast_slice(&[self.camera_uniform]),
-                    );
-                    render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
-                }
-            }
 
             let extent = FramebufferExtent::from_texture(&output.texture);
             self.imgui_renderer
