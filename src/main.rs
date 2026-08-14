@@ -10,6 +10,7 @@ use winit::{
 };
 
 mod camera;
+mod components;
 mod ecs;
 mod game;
 mod geometry;
@@ -66,7 +67,7 @@ impl ApplicationHandler<State> for App {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::Resized(size) => state.resize(size.width, size.height),
             WindowEvent::RedrawRequested => {
-                state.update();
+                state.update(&mut self.game);
                 match state.render() {
                     Ok(_) => {}
                     Err(e) => {

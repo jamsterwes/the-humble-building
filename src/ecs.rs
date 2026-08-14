@@ -93,7 +93,15 @@ impl Game {
             .downcast_mut::<T>()
     }
 
-    fn get_components_mut<T: Any>(&mut self) -> impl Iterator<Item = (EntityId, &mut T)> {
+    pub fn get_first_entity_with<T: Any>(&self) -> Option<EntityId> {
+        self._entity_components
+            .get(&TypeId::of::<T>())?
+            .keys()
+            .next()
+            .copied()
+    }
+
+    pub fn get_components_mut<T: Any>(&mut self) -> impl Iterator<Item = (EntityId, &mut T)> {
         let component_type = TypeId::of::<T>();
         self._entity_components
             .get_mut(&component_type)

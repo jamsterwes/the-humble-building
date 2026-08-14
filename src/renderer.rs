@@ -7,6 +7,8 @@ use winit::{event::WindowEvent, event_loop::ActiveEventLoop, keyboard::KeyCode, 
 
 use crate::{
     camera::{Camera, CameraUniform},
+    components::base::{CameraComponent, TransformComponent},
+    ecs::Game,
     geometry::{INDICES, VERTICES, Vertex},
     ui::{UiState, render_ui},
 };
@@ -103,7 +105,10 @@ impl State {
         };
 
         let mut camera_uniform = CameraUniform::new();
-        camera_uniform.update_view_proj(&camera);
+        camera_uniform.update_view_proj(&camera, {
+            use cgmath::SquareMatrix;
+            cgmath::Matrix4::identity()
+        });
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera Buffer"),
@@ -297,13 +302,11 @@ impl State {
         // IDK if this is best spot to put UI-state-consumption. another day...
         self.camera_uniform
             .update_model(self.ui_state.get_model_matrix());
-        if self.ui_state.model_updated {
-            self.queue.write_buffer(
-                &self.camera_buffer,
-                0,
-                bytemuck::cast_slice(&[self.camera_uniform]),
-            );
-        }
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_uniform]),
+        );
 
         let mut encoder = self
             .device
@@ -353,5 +356,16 @@ impl State {
         }
     }
 
-    pub fn update(&mut self) {}
+    pub fn update(&mut self, game: &mut Game) {
+        if let Some(camera_eid) = game.get_first_entity_with::<CameraComponent>() {
+            if let Some(transform) = game.get_component::<TransformComponent>(camera_eid) {
+                use cgmath::SquareMatrix;
+                let view_matrix = transform
+                    .get_model_matrix()
+                    .invert()
+                    .unwrap_or(cgmath::Matrix4::identity());
+                self.camera_uniform.update_view_proj(&self.camera, view_matrix);
+            }
+        }
+    }
 }
