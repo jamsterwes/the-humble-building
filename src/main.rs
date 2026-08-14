@@ -10,19 +10,26 @@ use winit::{
 };
 
 mod camera;
+mod ecs;
+mod game;
 mod geometry;
 mod renderer;
 mod ui;
 
+use ecs::Game;
 use renderer::State;
 
 pub struct App {
     state: Option<State>,
+    game: Game,
 }
 
 impl App {
     pub fn new() -> Self {
-        Self { state: None }
+        Self {
+            state: None,
+            game: Game::new(),
+        }
     }
 }
 
@@ -33,6 +40,8 @@ impl ApplicationHandler<State> for App {
             Window::default_attributes().with_min_inner_size(LogicalSize::new(1280.0, 720.0));
         let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
         self.state = Some(pollster::block_on(State::new(window)).unwrap());
+
+        game::game_main(&mut self.game);
     }
 
     #[allow(unused_mut)]
