@@ -78,11 +78,19 @@ impl Game {
         return true;
     }
 
+    pub fn add_global_component<T: Any>(&mut self, component: T) -> bool {
+        self.add_component::<T>(self.global_entity, component)
+    }
+
     pub fn get_component<T: Any>(&self, eid: EntityId) -> Option<&T> {
         self._entity_components
             .get(&TypeId::of::<T>())?
             .get(&eid)?
             .downcast_ref::<T>()
+    }
+
+    pub fn get_global_component<T: Any>(&self) -> Option<&T> {
+        self.get_component::<T>(self.global_entity)
     }
 
     pub fn get_component_mut<T: Any>(&mut self, eid: EntityId) -> Option<&mut T> {
@@ -91,6 +99,10 @@ impl Game {
             .get_mut(&component_type)?
             .get_mut(&eid)?
             .downcast_mut::<T>()
+    }
+
+    pub fn get_global_component_mut<T: Any>(&mut self) -> Option<&mut T> {
+        self.get_component_mut::<T>(self.global_entity)
     }
 
     pub fn get_first_entity_with<T: Any>(&self) -> Option<EntityId> {
@@ -106,7 +118,10 @@ impl Game {
         self._entity_components
             .get(&component_type)
             .into_iter()
-            .flat_map(|m| m.iter().map(|(&eid, c)| (eid, c.downcast_ref::<T>().unwrap())))
+            .flat_map(|m| {
+                m.iter()
+                    .map(|(&eid, c)| (eid, c.downcast_ref::<T>().unwrap()))
+            })
     }
 
     pub fn get_components_mut<T: Any>(&mut self) -> impl Iterator<Item = (EntityId, &mut T)> {
